@@ -110,8 +110,8 @@ export const loginUser = asyncHandler(async (req, res) => {
 export const logoutUser = asyncHandler(async (req, res) => {
     try {
         // 2. Clear the user token
-        res.clearCookie("token");
-
+        // res.clearCookie("token");
+        res.cookie('token', '', { maxAge: 0 });
         // 3. Send a response
         return res.status(200).json({ success: true, message: "User logged out successfully" });
     } catch (error) {
