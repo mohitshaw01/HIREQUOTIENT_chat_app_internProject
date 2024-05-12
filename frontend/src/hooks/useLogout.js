@@ -10,7 +10,13 @@ const useLogout = () => {
         try {
             setLoading(true);
             try {
-                await fetch("/api/auth/logout");
+                await fetch("/api/auth/logout", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    credentials: "include",
+                });
                 localStorage.removeItem("chat-user");
                 setAuthUser(null);
             } catch (error) {

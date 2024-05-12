@@ -1,7 +1,6 @@
 import asyncHandler from "../utils/asyncHandler.js"
 import ApiError from "../utils/apiError.js"
 import { User } from "../models/user.model.js"
-import ApiResponse from "../utils/ApiResponse.js"
 
 
 export const getUsersForSidebar = asyncHandler(async (req, res, next) => {
@@ -13,12 +12,12 @@ export const getUsersForSidebar = asyncHandler(async (req, res, next) => {
         const loggedInUser = req.user._id;
         // Include the logged-in user in the list
         // const users = await User.find({ $or: [{ _id: loggedInUser }, { _id: { $ne: loggedInUser } }] });
-        const users = await User.find({ _id: { $ne: loggedInUser } }).select("-password -confirmPassword");
+        const filterUser = await User.find({ _id: { $ne: loggedInUser } }).select("-password -confirmPassword");
         // console.log(users);
-        if (!users) {
+        if (!filterUser) {
             return res.send("No users found");
         }
-        return res.status(200).json(new ApiResponse(200, users, "Users fetched successfully"));
+        res.status(200).json(filterUser);
     } catch (error) {
         return next(ApiError.internal("Error fetching users" + error.message));
     }

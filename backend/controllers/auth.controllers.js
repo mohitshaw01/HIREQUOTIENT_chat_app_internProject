@@ -99,9 +99,7 @@ export const loginUser = asyncHandler(async (req, res) => {
         const newUser = await User.findById(user._id).select(
             "-password -confirmPassword -gender"
         );
-        return res.status(200).json(
-            new ApiResponse(200, newUser, "user logged in successfully")
-        );
+        res.status(200).json(newUser);
     } catch (error) {
         res.send(new ApiResponse(400, error.message));
     }

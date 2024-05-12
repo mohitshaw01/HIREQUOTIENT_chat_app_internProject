@@ -1,9 +1,9 @@
 import asyncHandler from "../utils/asyncHandler.js"
 import ApiError from "../utils/apiError.js"
 import { Message } from "../models/message.model.js"
-import ApiResponse from "../utils/ApiResponse.js"
 import {Conversation} from "../models/conversation.model.js"
-
+import { getReceiverSocketId } from "../socket/socket.js"
+import { io } from "../socket/socket.js"
 
 export const sendMessage = asyncHandler(async (req, res) => {
     // steps to send a message
@@ -20,22 +20,24 @@ export const sendMessage = asyncHandler(async (req, res) => {
         let conversation = await Conversation.findOne({ participants: { $all: [senderId, receiverId] } });
         if(!conversation) {
             // then create one
-            conversation = new Conversation({ participants: [senderId, receiverId] });
+            conversation = await  Conversation.create({ participants: [senderId, receiverId] });
         }
-        
         const newMessage = new Message({ senderId, receiverId, message });
         if(newMessage) {
-            conversation.messages.push(newMessage);
+            conversation.messages.push(newMessage._id);
         }
-        // ADD socketes here
-
         // await conversation.save();
         // await newMessage.save();
         await Promise.all([conversation.save(), newMessage.save()]);
+        // socket
+        const receiverSocketId = getReceiverSocketId(receiverId);
+        if(receiverSocketId) {
+            io.to(receiverSocketId).emit("newMessage", newMessage);
+        }
 
-
-        res.status(201).json(new ApiResponse(201, {newMessage,Conversation}));
+        res.status(201).json(newMessage);
     } catch (error) {
+        console.log(error.message)
         res.status(500).json(new ApiError(500, "internal server errorr "+error.message));
     }
 });
@@ -52,7 +54,8 @@ export const getMessages = asyncHandler(async (req, res) => {
         if(!conversation) {
             return res.status(404).json(new ApiError(404, "No conversation found"));
         }
-        res.status(200).json(new ApiResponse(200, conversation.messages));
+        const messages = conversation.messages;
+        res.status(200).json(messages);
     } catch (error) {
         res.status(500).json(new ApiError(500, "internal server error"));
     }
