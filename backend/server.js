@@ -4,15 +4,20 @@ import cors from 'cors';
 import connectToDB from './db/dbConnection.js';
 // morgan is a HTTP request logger middleware for node.js
 import morgan from "morgan";
+import path from 'path';
 import cookieParser from 'cookie-parser';
 import {app,server} from './socket/socket.js';
 //
 // const app = express();
 env.config();
+<<<<<<< HEAD
 app.use(cors({
     origin : "http://localhost:3000",
     credentials : true,
 }))
+=======
+const __dirname = path.resolve();
+>>>>>>> testingLLM
 
 app.use(cookieParser()); // Parse Cookie header and populate req.cookies with an object keyed by the cookie names.
 app.use(express.json()); // for parsing application/json payloads
@@ -20,9 +25,15 @@ app.use(express.json()); // for parsing application/json payloads
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev")); //HTTP request logger middleware for node.js that logs requests to the console
 
+<<<<<<< HEAD
 app.get("/", (req, res) => {
     res.send("Server is active");
 });
+=======
+// app.get('/', (req, res) => {
+//     res.send('Server is ready');
+// });
+>>>>>>> testingLLM
 
 
 // Routes
@@ -32,6 +43,12 @@ import userRoutes from './routes/user.routes.js';
 app.use("/api/auth", authRoutes);
 app.use("/api/message", messageRoutes);
 app.use("/api/users", userRoutes);
+// serve static assets if in production
+app.use(express.static(path.join(__dirname, '/frontend/dist')));
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"));
+});
 
 
 server.listen(process.env.PORT, () => {
