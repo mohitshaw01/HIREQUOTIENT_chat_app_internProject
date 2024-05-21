@@ -10,14 +10,10 @@ import {app,server} from './socket/socket.js';
 //
 // const app = express();
 env.config();
-<<<<<<< HEAD
 app.use(cors({
     origin : "http://localhost:3000",
     credentials : true,
 }))
-=======
-const __dirname = path.resolve();
->>>>>>> testingLLM
 
 app.use(cookieParser()); // Parse Cookie header and populate req.cookies with an object keyed by the cookie names.
 app.use(express.json()); // for parsing application/json payloads
@@ -25,15 +21,9 @@ app.use(express.json()); // for parsing application/json payloads
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev")); //HTTP request logger middleware for node.js that logs requests to the console
 
-<<<<<<< HEAD
 app.get("/", (req, res) => {
     res.send("Server is active");
 });
-=======
-// app.get('/', (req, res) => {
-//     res.send('Server is ready');
-// });
->>>>>>> testingLLM
 
 
 // Routes

@@ -109,6 +109,49 @@ export const botMessage = async (req, res) => {
     res.status(200).json({ response });
 }
 
+// export const sendMessage = asyncHandler(async (req, res) => {
+//     // steps to send a message
+//     // 1. check if the conversation exists
+//     // 2. check if the user is a participant in the conversation
+//     // 3. create the message
+//     // 4. add the message to the conversation
+//     // 5. return the message
+//     try {
+//         const { id : receiverId } = req.params;
+//         const { message,status } = req.body;
+//         const senderId = req.user._id;
+//         // check if the conversation exists between the sender and the receiver 
+//         let conversation = await Conversation.findOne({ participants: { $all: [senderId, receiverId] } });
+//         if(status === "busy"){
+//             const response = await getGeminiResponse(message, senderId);
+//             return res.status(200).json({response});
+//         }
+//         if(!conversation) {
+//             // then create one
+//             conversation = await  Conversation.create({ participants: [senderId, receiverId] });
+//         }
+//         const newMessage = new Message({ senderId, receiverId, message });
+//         if(newMessage) {
+//             conversation.messages.push(newMessage._id);
+//         }
+//         // await conversation.save();
+//         // await newMessage.save();
+//         await Promise.all([conversation.save(), newMessage.save()]);
+//         // socket
+//         const receiverSocketId = getReceiverSocketId(receiverId);
+//         if(receiverSocketId) {
+//             io.to(receiverSocketId).emit("newMessage", newMessage);
+//         }
+
+//         res.status(201).json(newMessage);
+//     } catch (error) {
+//         console.log(error.message)
+//         res.status(500).json(new ApiError(500, "internal server errorr "+error.message));
+//     }
+// });
+
+
+
 export const sendMessage = asyncHandler(async (req, res) => {
     // steps to send a message
     // 1. check if the conversation exists
@@ -118,8 +161,21 @@ export const sendMessage = asyncHandler(async (req, res) => {
     // 5. return the message
     try {
         const { id : receiverId } = req.params;
-        const { message,status } = req.body;
+        const { message } = req.body;
+
+        //
+        // if the status of the user is busy then send the message to the bot and the response will be send to the user after 10 seconds.
+        const {status} = await User.findById(receiverId);
         const senderId = req.user._id;
+        console.log(status);
+        if(status === "busy"){
+            // after 10 seconds
+                setTimeout(async () => {
+                const response = await getGeminiResponse(message, senderId);
+                return res.status(200).json({response});
+            },10000);
+        }
+        else {
         // check if the conversation exists between the sender and the receiver 
         let conversation = await Conversation.findOne({ participants: { $all: [senderId, receiverId] } });
         if(status === "busy"){
@@ -144,6 +200,7 @@ export const sendMessage = asyncHandler(async (req, res) => {
         }
 
         res.status(201).json(newMessage);
+        }
     } catch (error) {
         console.log(error.message)
         res.status(500).json(new ApiError(500, "internal server errorr "+error.message));
